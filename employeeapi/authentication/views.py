@@ -14,7 +14,7 @@ import jwt
 from django.core.cache import cache
 from rest_framework import permissions
 
-from .serializers import EmployeeSerializer, UpdateEmployeeSerializer
+from .serializers import EmployeeSerializer, UpdateEmployeeSerializer, LoginSerializer
 from .models import EmployeeModel
 
 # Create your views here.
@@ -30,6 +30,8 @@ class RegisterView(GenericAPIView):
 
 
 class LoginView(GenericAPIView):
+    serializer_class = LoginSerializer
+
     def post(self, request):
         data = request.data
         email = data.get("email", "")
@@ -45,14 +47,6 @@ class LoginView(GenericAPIView):
         return Response(
             {"message": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED
         )
-
-
-class EmployeeList(ListAPIView):
-    serializer_class = EmployeeSerializer
-    throttle_classes = (AnonRateThrottle,)
-
-    def get_queryset(self):
-        return EmployeeModel.objects.all()
 
 
 class UpdateEmployeeView(RetrieveUpdateAPIView):
@@ -101,7 +95,6 @@ class DeleteEmployeeView(APIView):
     permission_classes = (permissions.IsAuthenticated,)
 
     def get_object(self, id):
-        print(id)
         try:
             return EmployeeModel.objects.get(id=id)
         except EmployeeModel.DoesNotExist:
@@ -111,3 +104,11 @@ class DeleteEmployeeView(APIView):
         employee = self.get_object(self.request.user.id)
         employee.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class EmployeeList(ListAPIView):
+    serializer_class = EmployeeSerializer
+    throttle_classes = (AnonRateThrottle,)
+
+    def get_queryset(self):
+        return EmployeeModel.objects.all()
