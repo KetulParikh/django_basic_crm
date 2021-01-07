@@ -6,6 +6,7 @@ from .views import (
     EmployeeView,
     UpdateEmployeeView,
     DeleteEmployeeView,
+    TestView,
 )
 
 
@@ -16,4 +17,5 @@ urlpatterns = [
     path("Employee/<id>", EmployeeView.as_view()),
     path("UpdateEmployee", UpdateEmployeeView.as_view()),
     path("DeleteEmployee", DeleteEmployeeView.as_view()),
+    path("TestLearn/<str:partner_api_key>", TestView.as_view()),
 ]

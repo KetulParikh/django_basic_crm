@@ -16,6 +16,7 @@ from rest_framework import permissions
 
 from .serializers import EmployeeSerializer, UpdateEmployeeSerializer, LoginSerializer
 from .models import EmployeeModel
+from .learn import BaseAPIView
 
 # Create your views here.
 class RegisterView(GenericAPIView):
@@ -111,4 +112,15 @@ class EmployeeList(ListAPIView):
     throttle_classes = (AnonRateThrottle,)
 
     def get_queryset(self):
-        return EmployeeModel.objects.all()
+        return list(EmployeeModel.objects.all())
+
+
+class TestView(BaseAPIView):
+    def get(self, request, partner_api_key):
+        print(2)
+        return super().get(request, partner_api_key)
+
+    def execute_get(self, request):
+        print(3)
+        print(self.kp)
+        return Response(status=status.HTTP_200_OK)
