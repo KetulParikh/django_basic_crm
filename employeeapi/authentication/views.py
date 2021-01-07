@@ -109,7 +109,7 @@ class DeleteEmployeeView(APIView):
 
 class EmployeeList(ListAPIView):
     serializer_class = EmployeeSerializer
-    throttle_classes = (AnonRateThrottle,)
+    # throttle_classes = (AnonRateThrottle,)
 
     def get_queryset(self):
         return list(EmployeeModel.objects.all())
