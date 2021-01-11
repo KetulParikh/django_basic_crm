@@ -1,5 +1,5 @@
 from django.test import TestCase
-from rest_framework.status import HTTP_200_OK
+from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
 from rest_framework.test import APIClient
 
 from .models import EmployeeModel
@@ -17,7 +17,7 @@ class EmployeeTestCase(TestCase):
     def test_get_employees(self):
         """test to see uer created or not"""
         response = self.request_client.get("/v1/auth/Employees", self.header)
-        self.assertEqual(response.status_code, HTTP_200_OK)
+        self.assertEqual(response.status_code, HTTP_400_BAD_REQUEST)
         expected_respopnse = list(self.emps)
         response_received = list(response.data)
         print(response.status_code, response.data)

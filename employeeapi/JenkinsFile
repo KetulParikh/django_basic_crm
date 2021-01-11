@@ -1,0 +1,59 @@
+node {
+    cleanWs()
+    
+    stage ('Setting up environment') {
+          sh "mkdir -p test"
+    }
+    
+    stage('Preparation') {
+        dir("test/"){
+            git 'https://github.com/KetulParikh/django_basic_crm'
+        }
+    }
+    
+    boolean testStageError = false
+    try {
+        stage('test') {
+            dir("test/employeeapi/"){
+                def temp
+                sh "git clean -fdx"
+                sh "pip3 install -r requirements.txt"
+                sh "python3 manage.py test > success_${env.JOB_NAME}_${env.BUILD_NUMBER}.txt 2> error_${env.JOB_NAME}_${env.BUILD_NUMBER}.txt"
+                script {
+                    env.testPassed = sh( script: "echo \$?",
+                                     returnStdout: true).trim()
+                    echo "testPassed: ${env.testPassed}"
+         }
+            }
+        }    
+    } catch (Exception e) {
+        testStageError = true
+    }
+    
+    stage('Deploy') {
+        dir("test/employeeapi/"){
+            echo env.testPassed
+            if(testStageError == false){
+                if( env.testPassed == '0'){
+                    slackSend color: "good", message: "Test successful: ${env.JOB_NAME}#${env.BUILD_NUMBER} <${env.BUILD_URL}|Open in Jenkins>"
+                    
+                    emailext subject: "Jenkins Build Unit Test SUCCESS: Job ${env.JOB_NAME}",
+                    body: "${currentBuild.currentResult}: Job ${env.JOB_NAME} build ${env.BUILD_NUMBER}\n More info at: ${env.BUILD_URL}",
+                    attachmentsPattern: "success_${env.JOB_NAME}_${env.BUILD_NUMBER}.txt",
+                    to: 'ketul93@gmail.com'
+                    
+                    
+                } else {
+                    slackSend color: "danger", message: "Test failed: ${env.JOB_NAME}#${env.BUILD_NUMBER} <${env.BUILD_URL}|Open in Jenkins>"
+                    
+                    emailext subject: "Jenkins Build Unit Test FAIL: Job ${env.JOB_NAME}",
+                    body: "${currentBuild.currentResult}: Job ${env.JOB_NAME} build ${env.BUILD_NUMBER}\n More info at: ${env.BUILD_URL}",
+                    attachmentsPattern: "error_${env.JOB_NAME}_${env.BUILD_NUMBER}.txt",
+                    to: 'ketul93@gmail.com'
+                }
+            } else {
+                slackSend color: "danger", message: "Test stage broken :face_with_head_bandage: \n`${env.JOB_NAME}#${env.BUILD_NUMBER}` <${env.BUILD_URL}|Open in Jenkins>"
+            }
+        }
+    }
+}
